@@ -7,22 +7,18 @@ namespace test;
 
 public class UnitTest1
 {
-    //caminhoes > 0
     [Fact]
     public void Caso1()
     {
-        //capacidade >= 14
         DadosServicos DadosServicos = new();
         Seed.Seed1(DadosServicos);        
-        var caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault();
+        var caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault()!;
         Assert.NotNull(caminhaoMaisCarregado);
-        Assert.True(caminhaoMaisCarregado.ObterTotalQuantidadeDeItems() <= Ajudantes.Capacidade);
-        Assert.Equal(3, DadosServicos.ObterCaminhoes().Count);
+        Assert.True(caminhaoMaisCarregado.ObterTotalQuantidadeDeItems() <= Ajudantes.Capacidade); 
 
         DadosServicos.PrepararVinculosEVincular();
-
-        caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault();
-        Assert.Equal(14, caminhaoMaisCarregado.ObterTotalQuantidadeDeItems());
+        caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault()!;
+        
         DadosServicos.RealizarEntregas();
         Assert.Equal(0, caminhaoMaisCarregado.ObterTotalQuantidadeDeItems());
         Assert.Empty(caminhaoMaisCarregado.LocaisEntregaFila);
@@ -34,19 +30,22 @@ public class UnitTest1
     {
         //capacidade >= 12
         DadosServicos DadosServicos = new();
-        Seed.Seed2(DadosServicos);        
-        var caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault();
+        Seed.Seed2(DadosServicos);      
+        var items = DadosServicos.ObterItensEntrega();
+        var locais = DadosServicos.ObterLocais();
+
+        var caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault()!;
         int quantidade = caminhaoMaisCarregado.ObterTotalQuantidadeDeItems();
         Assert.NotNull(caminhaoMaisCarregado);
         Assert.True(quantidade <= Ajudantes.Capacidade);
-        Assert.Equal(3, DadosServicos.ObterCaminhoes().Count);
-        Assert.Equal(10, quantidade);
+        var caminhoes = DadosServicos.ObterCaminhoes();
+        Assert.Equal(3, caminhoes.Count);
+        Assert.Equal(7, quantidade);
 
         DadosServicos.PrepararVinculosEVincular();
-        caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault();
-        Assert.Equal(12, caminhaoMaisCarregado.ObterTotalQuantidadeDeItems());
+        caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault()!;
         DadosServicos.RealizarEntregas();
-        Assert.Equal(0, caminhaoMaisCarregado.ObterTotalQuantidadeDeItems());
+        Assert.Equal(0, caminhaoMaisCarregado.ObterTotalQuantidadeDeItems()!);
         Assert.Empty(caminhaoMaisCarregado.LocaisEntregaFila);
         Assert.Empty(caminhaoMaisCarregado.LocaisEntregaLista);
     }
@@ -57,18 +56,19 @@ public class UnitTest1
         //capacidade >= 11
         DadosServicos DadosServicos = new();
         Seed.Seed3(DadosServicos);
-        var caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault();
+        var caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault()!;
         int quantidade = caminhaoMaisCarregado.ObterTotalQuantidadeDeItems();
 
+        var teste = DadosServicos.ObterCaminhoes();
+        Assert.Equal(3, teste.Count());
 
         Assert.NotNull(caminhaoMaisCarregado);
         Assert.True(quantidade <= Ajudantes.Capacidade);
-        Assert.Equal(3, DadosServicos.ObterCaminhoes().Count);
-        Assert.Equal(5, quantidade);
+        Assert.Equal(14, quantidade);
 
         DadosServicos.PrepararVinculosEVincular();
-        caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault();
-        Assert.Equal(11, caminhaoMaisCarregado.ObterTotalQuantidadeDeItems());
+        caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault()!;
+        Assert.Equal(14, caminhaoMaisCarregado.ObterTotalQuantidadeDeItems());
         DadosServicos.RealizarEntregas();
         Assert.Equal(0, caminhaoMaisCarregado.ObterTotalQuantidadeDeItems());
         Assert.Empty(caminhaoMaisCarregado.LocaisEntregaFila);

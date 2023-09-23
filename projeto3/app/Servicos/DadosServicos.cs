@@ -1,17 +1,13 @@
 ﻿using app.ClassesModelo;
 using app.Const;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
 namespace app.Interfaces;
 
 public class DadosServicos
 {
-    int capacidade = Ajudantes.Capacidade;
     private readonly List<Local> locais = new();
     private readonly List<ItemEntrega> itemsEntregas = new();
     private readonly List<Caminhao> caminhoes = new();
+
 
     public int RetornarProximoIdentificadorLocal()
     {
@@ -27,9 +23,40 @@ public class DadosServicos
     }
     public void AdicionarLocal(Local local)
     {
-        this.locais.Add(local);
+        if (local.Identificador == null && local.Nome == null)
+        {
+            return;
+        }
+        this.locais.Add(new Local { Identificador = RetornarProximoIdentificadorLocal(), Nome = local.Nome });
     }
 
+    public void AdicionarCaminhao(Caminhao caminhao)
+    {
+        if (caminhao.Identificador == null && caminhao.Placa == null)
+        {
+            return;
+        }
+        this.caminhoes.Add(new Caminhao
+        {
+            Identificador = RetornarProximoIdentificadorCaminhoes(),
+            Placa = caminhao.Placa
+        });   
+    }
+
+
+    public void AdicionarItemEntrega(ItemEntrega itemEntrega)
+    {
+        if (itemEntrega.Identificador == null && itemEntrega.Nome == null)
+        {
+            return;
+        }
+        this.itemsEntregas.Add(new ItemEntrega
+        {
+            Identificador = RetornarProximoIdentificadorItemEntregas(),
+            Nome = itemEntrega.Nome
+        });
+
+    }
     public List<Local> ObterLocais()
     {
         return this.locais;
@@ -40,21 +67,14 @@ public class DadosServicos
         return this.caminhoes;
     }
 
-    public void AdicionarItemEntrega(ItemEntrega itemEntrega)
-    {
-        this.itemsEntregas.Add(itemEntrega);
-    }
-
     public List<ItemEntrega> ObterItensEntrega()
     {
+
         return this.itemsEntregas;
     }
 
-    public void AdicionarCaminhao(Caminhao caminhao)
-    {
-        this.caminhoes.Add(caminhao);
-    }
 
+    // Associações
     public string AssociarPontoAoItemDeEntrega(int? idPonto, int? idItem)
     {
         try
@@ -62,9 +82,11 @@ public class DadosServicos
             var localEmQuestao = this.locais.FirstOrDefault(x => x.Identificador == idPonto);
             var itemEntrega = this.itemsEntregas.FirstOrDefault(x => x.Identificador == idItem);
 
-            if (localEmQuestao.ItensEntrega.Count + 1 <= capacidade)
+            if (localEmQuestao != null
+                && itemEntrega != null
+                && localEmQuestao.ItensEntrega().Count() + 1 <= Ajudantes.Capacidade)
             {
-                localEmQuestao.ItensEntrega?.Add(itemEntrega);
+                localEmQuestao.AdicionarItem(itemEntrega);
                 return "Associado com sucesso!";
             }
             else
@@ -77,48 +99,50 @@ public class DadosServicos
 
     public string AssociarPontoAoCaminhao(int? idPonto, int? idCaminhao)
     {
-        bool existePontoVinculadoAoLocal = this.caminhoes.Any((x => x.LocaisEntregaLista.Any(x => x.Identificador == idPonto)));
+        bool existePontoVinculadoAoLocal = this.caminhoes.Any(x => x.LocaisEntregaLista.Any(x => x.Identificador == idPonto));
         bool existeCaminhao = this.caminhoes.Exists(x => x.Identificador == idCaminhao);
         if (!existeCaminhao) { return "Não foi encontrado."; }
-        if ( existePontoVinculadoAoLocal) { return "Ponto já vinculado a outro caminhão."; }
+        if (existePontoVinculadoAoLocal) { return "Ponto já vinculado a outro caminhão."; }
         try
         {
             var localEmQuestao = this.locais.FirstOrDefault(x => x.Identificador == idPonto);
             var caminhao = this.caminhoes.FirstOrDefault(x => x.Identificador == idCaminhao);
-            if (caminhao.ObterTotalQuantidadeDeItems() + localEmQuestao.ItensEntrega.Count <= capacidade
-                && localEmQuestao.ItensEntrega.Count > 0
+            if (caminhao.ObterTotalQuantidadeDeItems() + localEmQuestao.ItensEntrega().Count() <= Ajudantes.Capacidade
+                && localEmQuestao.ItensEntrega().Count() > 0
                 && existePontoVinculadoAoLocal != true
                 )
             {
-                caminhao.LocaisEntregaLista?.Add(localEmQuestao);
+                caminhao.LocaisEntregaLista.Add(localEmQuestao);                
                 return "Associado com sucesso!";
             }
             else { return "Capacidade excedida!"; }
         }
         catch { return "Não foi encontrado."; }
     }
+
+    // Algo
     public void PrepararVinculosEVincular()
     {
-        var caminhoesValidos = this.caminhoes.Where(x => x.ObterTotalQuantidadeDeItems() <= capacidade).ToList();
+        var caminhoesValidos = this.caminhoes.Where(x => x.ObterTotalQuantidadeDeItems() <= Ajudantes.Capacidade).ToList();
         var caminhoesValidosOrdernadosPorLocal = caminhoesValidos.OrderBy(x => x.LocaisEntregaLista!.Count).ToList();
 
-        var locaisValidos = this.locais.Where(x => x.ItensEntrega.Count > 0).ToList();
+        var locaisValidos = this.locais?.Where(x => x?.ItensEntrega().Count() > 0) ?? new List<Local>();
         var locaisRegistrados = this.caminhoes.SelectMany(x => x.LocaisEntregaLista!).ToList();
         var locaisNaoRegistrados = locaisValidos.Where(x => !locaisRegistrados.Contains(x)).ToList();
 
-        var locaisNaoRegistradosValidos = locaisNaoRegistrados.Where(x => x.ItensEntrega!.Count > 0).ToList();
-        locaisNaoRegistradosValidos = locaisNaoRegistradosValidos.OrderByDescending(x => x.ItensEntrega!.Count).ToList();
+        var locaisNaoRegistradosValidos = locaisNaoRegistrados.Where(x => x.ItensEntrega().Count() > 0).ToList();
+        locaisNaoRegistradosValidos = locaisNaoRegistradosValidos.OrderByDescending(x => x.ItensEntrega().Count()).ToList();
 
         var caminhaoComMenorQuantidade = this.caminhoes.OrderBy(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault();
-        var localComMenorQuantidadeDeItems = locaisNaoRegistradosValidos.OrderBy(x => x.ItensEntrega!.Count).FirstOrDefault();
+        var localComMenorQuantidadeDeItems = locaisNaoRegistradosValidos.OrderBy(x => x.ItensEntrega().Count()).FirstOrDefault();
 
         if (localComMenorQuantidadeDeItems is null) { localComMenorQuantidadeDeItems = new Local(); }
         if (caminhaoComMenorQuantidade is null) { caminhaoComMenorQuantidade = new Caminhao(); }
 
-        while ( locaisNaoRegistradosValidos.Count != 0 
+        while (locaisNaoRegistradosValidos.Count() != 0
            // || localComMenorQuantidadeDeItems.ItensEntrega.Count + caminhaoComMenorQuantidade.ObterTotalQuantidadeDeItems() < capacidade 
            )
-        {           
+        {
             (var LocaisJaAdicionados, caminhoesValidosOrdernadosPorLocal, locaisNaoRegistradosValidos) = TentarVincularCaminhaoAPontoValido(caminhoesValidosOrdernadosPorLocal, locaisNaoRegistradosValidos);
             if (LocaisJaAdicionados.Count == 1)
             {
@@ -126,17 +150,52 @@ public class DadosServicos
                 LocaisJaAdicionados.Clear();
             }
             caminhoesValidosOrdernadosPorLocal = this.caminhoes.OrderBy(x => x.LocaisEntregaLista!.Count).ToList();
-            localComMenorQuantidadeDeItems = locaisNaoRegistradosValidos.OrderBy(x => x.ItensEntrega!.Count).FirstOrDefault();
+            localComMenorQuantidadeDeItems = locaisNaoRegistradosValidos.OrderBy(x => x.ItensEntrega().Count()).FirstOrDefault();
 
             caminhaoComMenorQuantidade = this.caminhoes.OrderBy(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault();
             if (localComMenorQuantidadeDeItems == null ||
-                localComMenorQuantidadeDeItems.ItensEntrega.Count + caminhaoComMenorQuantidade.ObterTotalQuantidadeDeItems() >= capacidade)
+                localComMenorQuantidadeDeItems.ItensEntrega().Count() + caminhaoComMenorQuantidade.ObterTotalQuantidadeDeItems() >= Ajudantes.Capacidade)
             {
                 break;
             }
         }
     }
+    
+    private (List<Local>, List<Caminhao>, List<Local>) TentarVincularCaminhaoAPontoValido(List<Caminhao> caminhoesValidosOrdernadosPorLocal,
+                                                            List<Local> locaisNaoRegistradosValidos)
+    {
+        List<Local> LocaisJaAdicionados = new();
+        for (int i = 0; i < caminhoesValidosOrdernadosPorLocal.Count; i++)
+        {
+            if (caminhoesValidosOrdernadosPorLocal[i].ObterTotalQuantidadeDeItems() <= Ajudantes.Capacidade)
+            {
+                for (int j = 0; j < locaisNaoRegistradosValidos.Count; j++)
+                {
+                    if (caminhoesValidosOrdernadosPorLocal[i].ObterTotalQuantidadeDeItems() + locaisNaoRegistradosValidos[j].ItensEntrega().Count() <= Ajudantes.Capacidade)
+                    {
+                        if (!LocaisJaAdicionados.Contains(locaisNaoRegistradosValidos[j])
+                            || LocaisJaAdicionados.Count == 0
+                            )
+                        {
+                            string result = AssociarPontoAoCaminhao(locaisNaoRegistradosValidos[j].Identificador, caminhoesValidosOrdernadosPorLocal[i].Identificador);
+                            if (result == "Associado com sucesso!")
+                            {
+                                LocaisJaAdicionados.Add(locaisNaoRegistradosValidos[j]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (LocaisJaAdicionados.Any())
+                {
+                    break;
+                }
+            }
+        }
+        return (LocaisJaAdicionados, caminhoesValidosOrdernadosPorLocal, locaisNaoRegistradosValidos);
+    }
 
+    // Prints e queues
     private char GerandoLetraComoNumero(int contador)
     {
         Dictionary<int, char> alphabetMapping = new Dictionary<int, char>
@@ -172,71 +231,41 @@ public class DadosServicos
         return alphabetMapping[contador];
     }
 
-    private (List<Local>, List<Caminhao>, List<Local>) TentarVincularCaminhaoAPontoValido(List<Caminhao> caminhoesValidosOrdernadosPorLocal,
-                                                            List<Local> locaisNaoRegistradosValidos)
-    {
-        List<Local> LocaisJaAdicionados = new();
-        for (int i = 0; i < caminhoesValidosOrdernadosPorLocal.Count; i++)
-        {
-            if (caminhoesValidosOrdernadosPorLocal[i].ObterTotalQuantidadeDeItems() <= capacidade)
-            {
-                for (int j = 0; j < locaisNaoRegistradosValidos.Count; j++)
-                {
-                    if (caminhoesValidosOrdernadosPorLocal[i].ObterTotalQuantidadeDeItems() + locaisNaoRegistradosValidos[j].ItensEntrega!.Count <= capacidade)
-                    {
-                        if (!LocaisJaAdicionados.Contains(locaisNaoRegistradosValidos[j])
-                            || LocaisJaAdicionados.Count == 0
-                            )
-                        {
-                            string result = AssociarPontoAoCaminhao(locaisNaoRegistradosValidos[j].Identificador, caminhoesValidosOrdernadosPorLocal[i].Identificador);
-                            if (result == "Associado com sucesso!")
-                            {
-                                LocaisJaAdicionados.Add(locaisNaoRegistradosValidos[j]);
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (LocaisJaAdicionados.Any())
-                {
-                    break;
-                }
-            }
-        }
-        return (LocaisJaAdicionados, caminhoesValidosOrdernadosPorLocal, locaisNaoRegistradosValidos);
-    }
-
     public void RealizarEntregas()
     {
         List<Local> locaisVisitados = new();
-        this.caminhoes.ForEach(x => x.LocaisEntregaLista.ForEach(y => x.LocaisEntregaFila.Enqueue(y)));
+        this.caminhoes.ForEach(x => x.LocaisEntregaLista?.ForEach(y => x.LocaisEntregaFila?.Enqueue(y)));
 
         int totalItemEntregues = 0;
         int totalLocaisVisitados = 0;
-        for (int cc = 0; cc < caminhoes.Count; cc++)
+
+        foreach (var caminhao in caminhoes)
         {
-            Console.WriteLine($"Percurso do caminhão: {caminhoes[cc].Placa}: ");
-            for (int cl = 0; cl < caminhoes[cc].LocaisEntregaLista!.Count; cl++)
+            Console.WriteLine($"Percurso do caminhão: {caminhao.Placa}: ");
+
+            if (caminhao.LocaisEntregaLista == null) continue;
+
+            for (int cl = 0; cl < caminhao.LocaisEntregaLista.Count; cl++)
             {
-                Console.WriteLine($"\t" + GerandoLetraComoNumero(cl + 1) +
-                    $". Visitado local de entrega {caminhoes[cc].LocaisEntregaLista[cl].Nome}. Foram entregues os itens: ");
+                var localEntrega = caminhao.LocaisEntregaLista[cl];
+                Console.WriteLine($"\t{GerandoLetraComoNumero(cl + 1)}. Visitado local de entrega {localEntrega.Nome}. Foram entregues os itens: ");
 
-                for (int ci = 0; ci < caminhoes[cc].LocaisEntregaLista[cl].ItensEntrega!.Count; ci++)
+                if (localEntrega.ItensEntrega == null) continue;
+
+                foreach (var (itemEntrega, index) in localEntrega.ItensEntrega().Select((Value, Index) => (Value, Index)))
                 {
-                    Console.WriteLine($"\t\t" + GerandoLetraComoNumero(ci + 1) +
-                    $". {caminhoes[cc].LocaisEntregaLista[cl].ItensEntrega[ci].Nome}");
-
-                    totalItemEntregues += 1;
+                    Console.WriteLine($"\t\t{GerandoLetraComoNumero(index + 1)}. {itemEntrega.Nome}");
+                    totalItemEntregues++;
                 }
 
-                var localVisitado = this.caminhoes[cc].LocaisEntregaFila.Dequeue();
-                this.locais.FirstOrDefault(x=> x.Identificador == localVisitado.Identificador).Desvincular();
-                totalLocaisVisitados += 1;
-            }          
+                if (caminhao.LocaisEntregaFila == null || !caminhao.LocaisEntregaFila.TryDequeue(out var localVisitado)) continue;
+
+                this.locais.FirstOrDefault(x => x.Identificador == localVisitado.Identificador)?.Desvincular();
+                totalLocaisVisitados++;
+            }
         }
         Console.WriteLine($"Total de locais de entrega: {totalLocaisVisitados}");
         Console.WriteLine($"Total de items entregues: {totalItemEntregues}");
-
-        this.caminhoes.ForEach(caminhoes => caminhoes.DesvincularLocais());
+        this.caminhoes.ForEach(caminhao => caminhao.DesvincularLocais());
     }
 }
