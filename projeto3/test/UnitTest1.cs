@@ -14,7 +14,13 @@ public class UnitTest1
         Seed.Seed1(DadosServicos);        
         var caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault()!;
         Assert.NotNull(caminhaoMaisCarregado);
-        Assert.True(caminhaoMaisCarregado.ObterTotalQuantidadeDeItems() <= Ajudantes.Capacidade); 
+        Assert.True(caminhaoMaisCarregado.ObterTotalQuantidadeDeItems() <= Ajudantes.Capacidade);
+        var caminhoes = DadosServicos.ObterCaminhoes();
+        Assert.Equal(3, caminhoes.Count());
+        var locais = DadosServicos.ObterLocais();
+        Assert.Equal(4, locais.Count());
+        var itensEntregas = DadosServicos.ObterItensEntrega();
+        Assert.Equal(50, itensEntregas.Count());
 
         DadosServicos.PrepararVinculosEVincular();
         caminhaoMaisCarregado = DadosServicos.ObterCaminhoes().OrderByDescending(x => x.ObterTotalQuantidadeDeItems()).FirstOrDefault()!;

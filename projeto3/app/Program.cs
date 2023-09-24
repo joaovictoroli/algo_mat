@@ -7,7 +7,7 @@ class Program
     {
         DadosServicos DadosServicos = new();
         //
-        //Seed1(DadosServicos);
+        Seed1(DadosServicos);
         //
         bool rodando = true;
         while (rodando)

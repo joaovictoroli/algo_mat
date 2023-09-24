@@ -126,11 +126,10 @@ public class Seed
 
         var mapaPontosEntrega = new Dictionary<int, (int Inicio, int Fim)>
         {
-            { 6, (1, 15) },
+            { 1, (1, 15) },
             { 2, (15, 30) },
             { 3, (30, 38) },
-            { 4, (38, 44) },
-            { 5, (44, 47) },
+            { 4, (38, 45) },
         };
 
         foreach (var ponto in mapaPontosEntrega)
