@@ -1,4 +1,5 @@
 ﻿using app.ClassesModelo;
+using app.Const;
 using app.Interfaces;
 using Bogus;
 class Program
@@ -23,38 +24,38 @@ class Program
         switch (option)
         {
             case 1:
-                Escrever("Inserir ponto de entrega");
-                Escrever("Nome: ");
+                Ajudantes.Escrever("Inserir ponto de entrega");
+                Ajudantes.Escrever("Nome: ");
                 var nomePonto = LerString();
                 int identificador = DadosServicos.RetornarProximoIdentificadorLocal();
                 Local local = new Local { Identificador=identificador, Nome = nomePonto } ;
                 DadosServicos.AdicionarLocal(local);
                 break;
             case 2:
-                Escrever("Inserir item de entrega");
-                Escrever("Nome: ");
+                Ajudantes.Escrever("Inserir item de entrega");
+                Ajudantes.Escrever("Nome: ");
                 string nomeItem = LerString();
                 identificador = DadosServicos.RetornarProximoIdentificadorItemEntregas();
                 ItemEntrega itemEntrega = new() { Identificador = identificador, Nome = nomeItem };
                 DadosServicos.AdicionarItemEntrega(itemEntrega);
                 break;
             case 3:
-                Escrever("Inserir caminhão");
-                Escrever("Placa: ");
+                Ajudantes.Escrever("Inserir caminhão");
+                Ajudantes.Escrever("Placa: ");
                 string placaCaminhao = LerString();
                 Caminhao caminhao = new() { Identificador = DadosServicos.RetornarProximoIdentificadorCaminhoes(), Placa = placaCaminhao };
                 DadosServicos.AdicionarCaminhao(caminhao);
                 break;
             case 4:
-                Escrever("Associar item a ponto de entrega");
+                Ajudantes.Escrever("Associar item a ponto de entrega");
                 AssociarPontoAoItemEntrega(DadosServicos);
                 break;
             case 5:
-                Escrever("Associar ponto de entrega a caminhão");
+                Ajudantes.Escrever("Associar ponto de entrega a caminhão");
                 AssociarPontoAoCaminhao(DadosServicos);
                 break;
             case 6:
-                Escrever("Realizar entregas");
+                Ajudantes.Escrever("Realizar entregas");
                 DadosServicos.PrepararVinculosEVincular();
                 DadosServicos.RealizarEntregas();
                 break;
@@ -62,25 +63,20 @@ class Program
                 ImprimirTodosTestes(DadosServicos);
                 break;
             case 0:
-                Escrever("Sair");
+                Ajudantes.Escrever("Sair");
                 break;
         }
     }
     private static int EscreverMenuInicial()
     {
-        Escrever("[1] Inserir ponto de entrega;");
-        Escrever("[2] Inserir item de entrega;");
-        Escrever("[3] Inserir caminhão;");
-        Escrever("[4] Associar item a ponto de entrega;");
-        Escrever("[5] Associar ponto de entrega a caminhão;");
-        Escrever("[6] Realizar entregas;");
-        Escrever("[0] Sair.");
+        Ajudantes.Escrever("[1] Inserir ponto de entrega;");
+        Ajudantes.Escrever("[2] Inserir item de entrega;");
+        Ajudantes.Escrever("[3] Inserir caminhão;");
+        Ajudantes.Escrever("[4] Associar item a ponto de entrega;");
+        Ajudantes.Escrever("[5] Associar ponto de entrega a caminhão;");
+        Ajudantes.Escrever("[6] Realizar entregas;");
+        Ajudantes.Escrever("[0] Sair.");
         return LerInteiro();
-    }
-
-    private static void Escrever(string conteudo)
-    {
-        Console.WriteLine(conteudo);
     }
 
     private static string LerString()
@@ -96,50 +92,50 @@ class Program
         }
         catch
         {
-            Escrever("Somente inteiros.");
+            Ajudantes.Escrever("Somente inteiros.");
             return -1;
         }
     }
     private static void ImprimirTodos(DadosServicos servicos)
     {
-        Escrever("Imprimir todos");
-        Escrever("Items de Entrega:");
-        foreach (var itemEntrega in servicos.ObterItensEntrega()) { Escrever(itemEntrega.ToString()); }
-        Escrever("Locais:");
+        Ajudantes.Escrever("Imprimir todos");
+        Ajudantes.Escrever("Items de Entrega:");
+        foreach (var itemEntrega in servicos.ObterItensEntrega()) { Ajudantes.Escrever(itemEntrega.ToString()); }
+        Ajudantes.Escrever("Locais:");
         foreach (var local in servicos.ObterLocais())
         {
-            Escrever(local.ToString());
-            foreach (ItemEntrega itemEntrega in local.ItensEntrega()) { Escrever(itemEntrega.ToString()); }
+            Ajudantes.Escrever(local.ToString());
+            foreach (ItemEntrega itemEntrega in local.ItensEntrega()) { Ajudantes.Escrever(itemEntrega.ToString()); }
         }
-        Escrever("Caminhões:");
-        foreach (var caminhao in servicos.ObterCaminhoes()) { Escrever(caminhao.ToString()); }
+        Ajudantes.Escrever("Caminhões:");
+        foreach (var caminhao in servicos.ObterCaminhoes()) { Ajudantes.Escrever(caminhao.ToString()); }
     }
 
     private static void ImprimirTodosTestes(DadosServicos servicos)
     {
-        Escrever("Imprimir todos");
-        Escrever("Items de Entrega:");
+        Ajudantes.Escrever("Imprimir todos");
+        Ajudantes.Escrever("Items de Entrega:");
         //foreach (var itemEntrega in servicos.ObterItensEntrega()) { Escrever(itemEntrega.ToString()); }
-        Escrever("Locais:");
+        Ajudantes.Escrever("Locais:");
         foreach (var local in servicos.ObterLocais())
         {
-            Escrever(local.ToString());
-            foreach (var itemEntrega in local.ItensEntrega()) { Escrever(itemEntrega.ToString()); }
+            Ajudantes.Escrever(local.ToString());
+            foreach (var itemEntrega in local.ItensEntrega()) { Ajudantes.Escrever(itemEntrega.ToString()); }
 
         }
-        Escrever("Caminhões:");
-        foreach (var caminhao in servicos.ObterCaminhoes()) { Escrever(caminhao.ToString()); }
+        Ajudantes.Escrever("Caminhões:");
+        foreach (var caminhao in servicos.ObterCaminhoes()) { Ajudantes.Escrever(caminhao.ToString()); }
     }
 
     private static void AssociarPontoAoItemEntrega(DadosServicos DadosServicos)
     {
         var itemsLista = DadosServicos.ObterItensEntrega();
-        foreach (var item in itemsLista) { Escrever(item.ToString()); };
-        Escrever("Escreva o numero do item que deseja associar: ");
+        foreach (var item in itemsLista) { Ajudantes.Escrever(item.ToString()); };
+        Ajudantes.Escrever("Escreva o numero do item que deseja associar: ");
         int option = LerInteiro();
         var locaisLista = DadosServicos.ObterLocais();
-        Escrever("Escreva o numero do local que deseja associar: ");
-        foreach (var local in locaisLista) { Escrever(local.ToString()); };
+        Ajudantes.Escrever("Escreva o numero do local que deseja associar: ");
+        foreach (var local in locaisLista) { Ajudantes.Escrever(local.ToString()); };
         int option2 = LerInteiro();
         DadosServicos.AssociarPontoAoItemDeEntrega(option, option2);
     }
@@ -147,14 +143,14 @@ class Program
     private static void AssociarPontoAoCaminhao(DadosServicos DadosServicos)
     {
         var locaisLista = DadosServicos.ObterLocais();
-        Escrever("Escreva o numero do local que deseja associar: ");
-        foreach (var local in locaisLista) { Escrever(local.ToString()); };
+        Ajudantes.Escrever("Escreva o numero do local que deseja associar: ");
+        foreach (var local in locaisLista) { Ajudantes.Escrever(local.ToString()); };
         int option = LerInteiro();
         var caminhaoLista = DadosServicos.ObterCaminhoes();
-        foreach (var caminhao in caminhaoLista) { Escrever(caminhao.ToString()); };
-        Escrever("Escreva o numero do caminhao que deseja associar: ");
+        foreach (var caminhao in caminhaoLista) { Ajudantes.Escrever(caminhao.ToString()); };
+        Ajudantes.Escrever("Escreva o numero do caminhao que deseja associar: ");
         int option2 = LerInteiro();
-        Escrever(DadosServicos.AssociarPontoAoCaminhao(option, option2));
+        Ajudantes.Escrever(DadosServicos.AssociarPontoAoCaminhao(option, option2));
     }
 
     private static void Seed1(DadosServicos DadosServicos)

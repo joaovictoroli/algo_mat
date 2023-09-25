@@ -241,20 +241,20 @@ public class DadosServicos
 
         foreach (var caminhao in caminhoes)
         {
-            Console.WriteLine($"Percurso do caminhão: {caminhao.Placa}: ");
+            Ajudantes.Escrever($"Percurso do caminhão: {caminhao.Placa}: ");
 
             if (caminhao.LocaisEntregaLista == null) continue;
 
             for (int cl = 0; cl < caminhao.LocaisEntregaLista.Count; cl++)
             {
                 var localEntrega = caminhao.LocaisEntregaLista[cl];
-                Console.WriteLine($"\t{GerandoLetraComoNumero(cl + 1)}. Visitado local de entrega {localEntrega.Nome}. Foram entregues os itens: ");
+                Ajudantes.Escrever($"\t{GerandoLetraComoNumero(cl + 1)}. Visitado local de entrega {localEntrega.Nome}. Foram entregues os itens: ");
 
                 if (localEntrega.ItensEntrega == null) continue;
 
                 foreach (var (itemEntrega, index) in localEntrega.ItensEntrega().Select((Value, Index) => (Value, Index)))
                 {
-                    Console.WriteLine($"\t\t{GerandoLetraComoNumero(index + 1)}. {itemEntrega.Nome}");
+                    Ajudantes.Escrever($"\t\t{GerandoLetraComoNumero(index + 1)}. {itemEntrega.Nome}");
                     totalItemEntregues++;
                 }
 
@@ -264,8 +264,8 @@ public class DadosServicos
                 totalLocaisVisitados++;
             }
         }
-        Console.WriteLine($"Total de locais de entrega: {totalLocaisVisitados}");
-        Console.WriteLine($"Total de items entregues: {totalItemEntregues}");
+        Ajudantes.Escrever($"Total de locais de entrega: {totalLocaisVisitados}");
+        Ajudantes.Escrever($"Total de items entregues: {totalItemEntregues}");
         this.caminhoes.ForEach(caminhao => caminhao.DesvincularLocais());
     }
 }
